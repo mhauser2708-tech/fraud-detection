@@ -95,3 +95,24 @@ def build_features_for_model(df: pd.DataFrame) -> pd.DataFrame:
     df = convert_date_columns(df)   
     df = create_transaction_difference(df)  
     return df
+
+def handle_missing_transaction_diff(
+    df: pd.DataFrame, fill_value: float | None = None
+) -> pd.DataFrame:
+    """
+    Handles missing values in the transaction difference column.
+    Adds new column 'is_first_transaction' to indicate whether a transaction is the first for an account.
+    
+    Args:
+        df: DataFrame containing the transaction data.
+        fill_value: Value to use for filling missing values. If None, uses the median.
+    
+    Returns:
+        DataFrame with missing values in 'Transaction_diff' filled.
+    """
+    df = df.copy()
+    df["is_first_transaction"] = df["Transaction_diff"].isna().astype(int)   
+    if fill_value is None:
+        fill_value = df["Transaction_diff"].median()               
+    df["Transaction_diff"] = df["Transaction_diff"].fillna(fill_value)
+    return df
