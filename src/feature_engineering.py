@@ -1,5 +1,6 @@
 import pandas as pd
-
+from sklearn.model_selection import train_test_split
+from src.config import RANDOM_STATE, TEST_SIZE
 
 def convert_date_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -116,3 +117,44 @@ def handle_missing_transaction_diff(
         fill_value = df["Transaction_diff"].median()               
     df["Transaction_diff"] = df["Transaction_diff"].fillna(fill_value)
     return df
+
+FEATURES_FOR_MODEL = [
+    "TransactionAmount",
+    "LoginAttempts",
+    "TransactionDuration",
+    "CustomerAge",
+    "Transaction_diff",
+]
+
+
+def prepare_features(
+    df_raw: pd.DataFrame,
+    test_size: float = TEST_SIZE,
+    random_state: int = RANDOM_STATE,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Builds features, splits into train/test and handles missing values.
+
+    The median used to fill 'Transaction_diff' is computed on the training
+    part only and applied to both parts (fit on train, transform on test),
+    so no information from the test set leaks into preprocessing.
+
+    Args:
+        df_raw: Raw transaction data as loaded from the CSV file.
+        test_size: Fraction of rows used for the test set.
+        random_state: Seed for a reproducible split.
+
+    Returns:
+        Tuple (X_train, X_test) containing only the columns in FEATURES_FOR_MODEL.
+    """
+    df_features = build_features_for_model(df_raw)
+
+    df_train, df_test = train_test_split(
+        df_features, test_size=test_size, random_state=random_state
+    )
+
+    median_train = df_train["Transaction_diff"].median()
+    df_train = handle_missing_transaction_diff(df_train, fill_value=median_train)
+    df_test = handle_missing_transaction_diff(df_test, fill_value=median_train)
+
+    return df_train[FEATURES_FOR_MODEL], df_test[FEATURES_FOR_MODEL]
