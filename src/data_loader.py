@@ -2,7 +2,8 @@ from pathlib import Path
 
 import pandas as pd
 
-DEFAULT_DATA_PATH = Path("data") / "bank_transactions_data_2.csv"
+# Resolved relative to this file, so the code runs from any working directory
+DEFAULT_DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "bank_transactions_data_2.csv"
 
 # Columns the feature pipeline needs
 REQUIRED_COLUMNS = [
@@ -21,7 +22,7 @@ def load_transactions(path: Path | str = DEFAULT_DATA_PATH) -> pd.DataFrame:
     Load the raw transaction CSV and check that the required columns exist.
 
     Args:
-        path: Path to the CSV file (relative to the working directory).
+        path: Path to the CSV file. Defaults to data/bank_transactions_data_2.csv in the project.
 
     Returns:
         Raw transactions as a DataFrame.
