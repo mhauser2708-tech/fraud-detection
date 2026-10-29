@@ -4,3 +4,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 .vscode/*
+.venv/
+.pytest_cache/
+.DS_Store
